@@ -2,23 +2,23 @@
   "name": "@ggicci/image-decrypter",
   "version": "0.1.0",
   "description": "Decrypt images in the browser",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "files": [
-    "/dist"
+    "/lib"
   ],
   "scripts": {
     "build": "tsc",
-    "lint": "eslint 'src/**/*.{js,ts,tsx}' --quiet --fix",
+    "format": "prettier --write 'src/**/*.{js,ts}'",
+    "lint": "eslint 'src/**/*.{js,ts}' --quiet --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",
     "eslint": "^7.32.0",
-    "eslint-config-prettier": "^8.3.0",
-    "eslint-plugin-prettier": "^3.4.0",
     "prettier": "^2.3.2",
+    "prettier-eslint": "^13.0.0",
     "typescript": "^4.3.5"
   }
 }

@@ -12,9 +12,8 @@ type Ciphertext =
   | Float64Array
   | DataView
   | ArrayBuffer
-
 class Context {
-  constructor(public encryptedImage: Element, public lastResponse: Response = undefined) { }
+  constructor(public encryptedImage: Element, public lastResponse: Response = undefined) {}
 }
 
 function hexString2Bytes(hexString: string): Uint8Array {
@@ -53,7 +52,7 @@ class ImageDecrypter {
     public algo: (ctx: Context) => AlgoParams = getAESCBCAlgoFromElementAttributes,
     public key: (ctx: Context) => Promise<CryptoKey> = getAESCBCKeyFromElementAttributes,
     public ciphertext: (ctx: Context) => Promise<Ciphertext> = fetchWithCredentials,
-  ) { }
+  ) {}
 
   /**
    * Fetch encrypted images from the secure URL, decrypt them, and replace them

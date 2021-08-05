@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "esnext", // for browser
+    "target": "es2015",
+    "declaration": true,
+    "outDir": "./lib"
+  },
+  "include": ["src/**/*"]
+}
