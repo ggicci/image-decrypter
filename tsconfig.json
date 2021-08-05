@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "module": "esnext", // for browser
-    "target": "es2015",
-    "declaration": true,
-    "outDir": "./dist"
-  },
-  "include": ["src/**/*"]
-}
