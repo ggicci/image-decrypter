@@ -1,8 +1,20 @@
 type AlgoParams = AlgorithmIdentifier | RsaOaepParams | AesCtrParams | AesCbcParams | AesGcmParams
-type Ciphertext = Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer
+
+type Ciphertext =
+  | Int8Array
+  | Int16Array
+  | Int32Array
+  | Uint8Array
+  | Uint16Array
+  | Uint32Array
+  | Uint8ClampedArray
+  | Float32Array
+  | Float64Array
+  | DataView
+  | ArrayBuffer
 
 class Context {
-  constructor(public encryptedImage: Element, public lastResponse: Response = undefined) { }
+  constructor(public encryptedImage: Element, public lastResponse: Response = undefined) {}
 }
 
 function hexString2Bytes(hexString: string): Uint8Array {
@@ -41,7 +53,7 @@ class ImageDecrypter {
     public algo: (ctx: Context) => AlgoParams = getAESCBCAlgoFromElementAttributes,
     public key: (ctx: Context) => Promise<CryptoKey> = getAESCBCKeyFromElementAttributes,
     public ciphertext: (ctx: Context) => Promise<Ciphertext> = fetchWithCredentials,
-  ) { }
+  ) {}
 
   /**
    * Fetch encrypted images from the secure URL, decrypt them, and replace them
@@ -72,7 +84,7 @@ class ImageDecrypter {
   }
 
   protected cloneAttributes(target: Element, source: Element): void {
-    [...source.attributes].forEach((attr) => {
+    ;[...source.attributes].forEach((attr) => {
       target.setAttribute(attr.nodeName, attr.nodeValue)
     })
   }
