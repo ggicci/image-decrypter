@@ -1,4 +1,6 @@
-# js-encrypted-image
+# image-decrypter
+
+[![npm version](https://badge.fury.io/js/%40ggicci%2Fimage-decrypter.svg)](https://badge.fury.io/js/%40ggicci%2Fimage-decrypter)
 
 Decrypt images in the browser.
 
