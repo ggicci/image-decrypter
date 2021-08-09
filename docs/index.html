@@ -32,10 +32,8 @@
       </section>
     </main>
 
-    <script type="module" src="../dist/index.js"></script>
     <script type="module">
-      import { ImageDecrypter } from '../dist/index.js'
-
+      import { ImageDecrypter } from 'https://unpkg.com/@ggicci/image-decrypter/dist/index.js'
       window.decryptImages = (decryptImages) => {
         const decrypter = new ImageDecrypter()
         decrypter.decrypt()
