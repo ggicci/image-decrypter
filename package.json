@@ -7,6 +7,7 @@
   "files": [
     "dist"
   ],
+  "private": false,
   "scripts": {
     "build": "tsc",
     "lint": "prettier --write 'src/**/*.{js,ts}' && eslint 'src/**/*.{js,ts}' --quiet --fix",
