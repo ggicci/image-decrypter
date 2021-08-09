@@ -3,7 +3,7 @@
     "module": "esnext", // for browser
     "target": "es2015",
     "declaration": true,
-    "outDir": "./lib",
+    "outDir": "dist",
     "sourceMap": true
   },
   "include": [
