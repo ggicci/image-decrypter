@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Decrypter Demo</title>
+    <style>
+      .container {
+        max-width: 960px;
+        margin: 50px auto;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="container">
+      <section>
+        <h2>Demo #1. Decrypt Encrypted Lenna.png</h2>
+        <div>
+          <img
+            class="encrypted"
+            src="https://via.placeholder.com/320x320/888888/000000?text=Placeholder"
+            crypto-src="./Lenna.png.encrypted"
+            crypto-iv="44122879D2A5371AC4D9AE85ECFA794E"
+            crypto-key="98F7C27155698508057CC4650DF1A827"
+            style="height: 320px; width: 320px"
+          />
+        </div>
+        <div>
+          <button onclick="window.decryptImages()">Decrypt</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="../lib/index.js"></script>
+    <script type="module">
+      import { ImageDecrypter } from '../lib/index.js'
+
+      window.decryptImages = (decryptImages) => {
+        const decrypter = new ImageDecrypter()
+        decrypter.decrypt()
+      }
+    </script>
+  </body>
+</html>

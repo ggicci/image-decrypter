@@ -14,45 +14,24 @@ type Ciphertext =
   | ArrayBuffer
 
 class Context {
-  constructor(public encryptedImage: Element, public lastResponse: Response = undefined) {}
-}
+  public ciphertext: Ciphertext
+  public plaintext: ArrayBuffer
+  public lastResponse: Response
 
-function hexString2Bytes(hexString: string): Uint8Array {
-  return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
-}
-
-function getAESCBCAlgoFromElementAttributes(ctx: Context, attrName = 'crypto-iv'): AesCbcParams {
-  const hexIV = ctx.encryptedImage.getAttribute(attrName)
-  // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt#syntax
-  return {
-    name: 'AES-CBC',
-    iv: hexIV === undefined ? undefined : hexString2Bytes(hexIV),
+  constructor(public encryptedImage: Element) {
+    this.lastResponse = undefined
+    this.plaintext = undefined
   }
-}
-
-async function getAESCBCKeyFromElementAttributes(ctx: Context, attrName = 'crypto-key'): Promise<CryptoKey> {
-  const hexKey = ctx.encryptedImage.getAttribute(attrName)
-  // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
-  const cryptoKey = await crypto.subtle.importKey('raw', hexString2Bytes(hexKey), { name: 'AES-CBC' }, false, [
-    'decrypt',
-  ])
-
-  return cryptoKey
-}
-
-async function fetchWithCredentials(ctx: Context, attrName = 'crypto-src'): Promise<ArrayBuffer> {
-  const dataURL = ctx.encryptedImage.getAttribute(attrName)
-  const resp = await fetch(dataURL, { credentials: 'same-origin' })
-  ctx.lastResponse = resp // update ctx.lastResponse
-  return await resp.arrayBuffer()
 }
 
 class ImageDecrypter {
   constructor(
     public querySelector: string = 'img.encrypted',
-    public algo: (ctx: Context) => AlgoParams = getAESCBCAlgoFromElementAttributes,
-    public key: (ctx: Context) => Promise<CryptoKey> = getAESCBCKeyFromElementAttributes,
-    public ciphertext: (ctx: Context) => Promise<Ciphertext> = fetchWithCredentials,
+    public algo: (ctx: Context) => AlgoParams = ImageDecrypter.getAESCBCAlgoFromElementAttributes,
+    public key: (ctx: Context) => Promise<CryptoKey> = ImageDecrypter.getAESCBCKeyFromElementAttributes,
+    public ciphertext: (ctx: Context) => Promise<Ciphertext> = ImageDecrypter.fetchWithCredentials,
+    public onSuccess: (ctx: Context) => void = ImageDecrypter.replaceWithNewImage,
+    public onError: (ctx: Context, error: Error) => void,
   ) {}
 
   /**
@@ -62,31 +41,78 @@ class ImageDecrypter {
   public async decrypt(): Promise<void> {
     const nodeList = document.querySelectorAll(this.querySelector)
     for (const encryptedImage of nodeList) {
+      const ctx = new Context(encryptedImage)
       try {
-        const plaintext = await this.decryptImage(encryptedImage)
-        // https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
-        const decryptedImageURL = window.URL.createObjectURL(new Blob([plaintext]))
-        const newImage = document.createElement('img')
-        this.cloneAttributes(newImage, encryptedImage)
-        newImage.src = decryptedImageURL
-        encryptedImage.parentNode.replaceChild(newImage, encryptedImage)
+        const plaintext = await this.decryptImage(ctx)
+        ctx.plaintext = plaintext
+        this.onSuccess(ctx)
       } catch (error) {
-        console.error('ImageDecrypter: decrypt image error:', error)
+        if (this.onError) {
+          this.onError(ctx, error)
+        } else {
+          console.error('ImageDecrypter: decrypt image failed, node:', ctx.encryptedImage, 'error:', error)
+        }
       }
     }
   }
 
-  protected async decryptImage(encrypteImage: Element): Promise<ArrayBuffer> {
-    const ctx = new Context(encrypteImage)
+  protected async decryptImage(ctx: Context): Promise<ArrayBuffer> {
     const key = await this.key(ctx)
     const ciphertext = await this.ciphertext(ctx)
+    ctx.ciphertext = ciphertext
     return await window.crypto.subtle.decrypt(this.algo(ctx), key, ciphertext)
   }
 
-  protected cloneAttributes(target: Element, source: Element): void {
+  static cloneAttributes(target: Element, source: Element): void {
     ;[...source.attributes].forEach((attr) => {
       target.setAttribute(attr.nodeName, attr.nodeValue)
     })
+  }
+
+  static hexString2Bytes(hexString: string): Uint8Array {
+    return new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)))
+  }
+
+  static getAESCBCAlgoFromElementAttributes(ctx: Context, attrName = 'crypto-iv'): AesCbcParams {
+    const hexIV = ctx.encryptedImage.getAttribute(attrName)
+    // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/decrypt#syntax
+    return {
+      name: 'AES-CBC',
+      iv: hexIV === undefined ? undefined : ImageDecrypter.hexString2Bytes(hexIV),
+    }
+  }
+
+  static async getAESCBCKeyFromElementAttributes(ctx: Context, attrName = 'crypto-key'): Promise<CryptoKey> {
+    const hexKey = ctx.encryptedImage.getAttribute(attrName)
+    // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw',
+      ImageDecrypter.hexString2Bytes(hexKey),
+      { name: 'AES-CBC' },
+      false,
+      ['decrypt'],
+    )
+
+    return cryptoKey
+  }
+
+  static async fetchWithCredentials(ctx: Context, attrName = 'crypto-src'): Promise<ArrayBuffer> {
+    const dataURL = ctx.encryptedImage.getAttribute(attrName)
+    const resp = await fetch(dataURL, { credentials: 'same-origin' })
+    ctx.lastResponse = resp // update ctx.lastResponse
+    return await resp.arrayBuffer()
+  }
+
+  static replaceWithNewImage(ctx: Context): void {
+    const encryptedImage = ctx.encryptedImage
+    // https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+    const decryptedImageURL = window.URL.createObjectURL(new Blob([ctx.plaintext]))
+    const newImage = document.createElement('img')
+    ImageDecrypter.cloneAttributes(newImage, encryptedImage)
+    newImage.src = decryptedImageURL
+    newImage.classList.remove('encrypted')
+    newImage.classList.add('decrypted')
+    encryptedImage.parentNode.replaceChild(newImage, encryptedImage)
   }
 }
 

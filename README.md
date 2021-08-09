@@ -2,26 +2,23 @@
 
 Decrypt images in the browser.
 
+## Quick View
+
+See [Demo](https://ggicci.github.io/image-decrypter/)
+
 ```html
 <img
-  src="https://example.com/images/placeholder.png"
-  encrypted-src="https://example.com/images/encrypted.png"
   class="encrypted"
+  src="https://via.placeholder.com/320x320/888888/000000?text=Placeholder"
+  crypto-src="./Lenna.png.encrypted"
+  crypto-iv="44122879D2A5371AC4D9AE85ECFA794E"
+  crypto-key="98F7C27155698508057CC4650DF1A827"
+  style="height: 320px; width: 320px"
 />
 
-<script src="https://example.com/js/js-encrypted-image.js"></script>
-<script>
-  const decryptor = new ImageDecryptor({
-    querySelctor: "img.encrypted",
-    decryptionKey: () => Promise, // returns the decryption key
-  });
-
-  decryptor.decrypt();
+<script type="module" src="lib/index.js"></script>
+<script type="module">
+  import { ImageDecrypter } from 'lib/index.js'
+  new ImageDecryptor().decrypt()
 </script>
 ```
-
-TODO(ggicci): think about the `<picture>` tag?
-
-## Server API
-
-The image URL used in the attribute `encrypted-url` should return both the image and the decryption key.
